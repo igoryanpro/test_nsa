@@ -44,13 +44,19 @@ function spinWheel() {
     claimButton.disabled = true;
     prizeDisplay.classList.remove('show');
     
-    // Случайный выбор приза
-    const prizeIndex = Math.floor(Math.random() * PRIZES.length);
+    // Случайный выбор приза (0-3)
+    const prizeIndex = Math.floor(Math.random() * 4);
     currentPrize = PRIZES[prizeIndex];
     
-    // Расчет угла вращения (3 полных оборота + позиция приза)
-    const segmentAngle = 90; // 360 / 4 секции = 90 градусов
-    const targetAngle = 1080 + (prizeIndex * segmentAngle) + 45; // 1080 = 3 полных оборота
+    // Расчет угла вращения
+    // 3 полных оборота = 1080 градусов
+    // Каждая секция = 90 градусов
+    // Добавляем смещение, чтобы указатель останавливался на середине секции
+    const baseAngle = 1080; // 3 полных оборота
+    const segmentAngle = 90; // 90 градусов на секцию
+    const offset = 45; // Смещение на середину секции (90/2)
+    
+    const targetAngle = baseAngle + (prizeIndex * segmentAngle) + offset;
     
     // Сброс трансформации перед новым вращением
     wheel.style.transition = 'none';
@@ -137,7 +143,8 @@ function initTelegram() {
     } else {
         console.log('Запуск вне Telegram - режим отладки');
         // Для отладки вне Telegram
-        document.body.innerHTML += `
+        const debugDiv = document.createElement('div');
+        debugDiv.innerHTML = `
             <div style="
                 position: fixed;
                 top: 10px;
@@ -152,6 +159,7 @@ function initTelegram() {
                 Режим отладки
             </div>
         `;
+        document.body.appendChild(debugDiv);
     }
 }
 
@@ -167,13 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация рулетки
     wheel.style.transform = 'rotate(0deg)';
     
-    // Для отладки: автоматическое вращение через 2 секунды
-    if (!window.Telegram) {
-        setTimeout(() => {
-            console.log('Авто-вращение для отладки');
-            // spinWheel();
-        }, 2000);
-    }
+    // Для отладки: выводим секции
+    console.log('Рулетка инициализирована. 4 секции:');
+    console.log('1. Гайд №1 - красный сектор (0-90°)');
+    console.log('2. Гайд №2 - бирюзовый сектор (90-180°)');
+    console.log('3. Гайд №3 - желтый сектор (180-270°)');
+    console.log('4. Гайд №4 - зеленый сектор (270-360°)');
 });
 
 // Добавляем стили для корректного отображения в мобильных браузерах
@@ -186,15 +193,20 @@ style.textContent = `
         }
         
         .segment-text {
-            font-size: 12px;
-            margin-top: 35px;
-            margin-left: 35px;
+            font-size: 14px;
         }
+        
+        #text1 { top: 30%; left: 72%; }
+        #text2 { top: 72%; left: 72%; }
+        #text3 { top: 72%; left: 28%; }
+        #text4 { top: 30%; left: 28%; }
     }
     
-    /* Улучшаем видимость текста */
+    /* Улучшаем читаемость текста */
     .segment-text {
-        transform: rotate(45deg) translate(10px, 10px);
+        background: rgba(0,0,0,0.2);
+        padding: 2px 8px;
+        border-radius: 10px;
     }
     
     /* Анимация затухания для плавного появления */
