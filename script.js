@@ -4,7 +4,7 @@ const ALL_PRIZES = [
         id: 1,
         name: "Гайд №1",
         description: "🎉 Поздравляем! Вы выиграли Гайд №1!",
-        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view",
         color: "#FF6B6B",
         icon: "📚"
     },
@@ -12,7 +12,7 @@ const ALL_PRIZES = [
         id: 2,
         name: "Гайд №2", 
         description: "🎊 Ура! Вы выиграли Гайд №2!",
-        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view",
         color: "#4ECDC4",
         icon: "🎯"
     },
@@ -20,7 +20,7 @@ const ALL_PRIZES = [
         id: 3,
         name: "Гайд №3",
         description: "🌟 Отлично! Вы выиграли Гайд №3!",
-        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view",
         color: "#FFD166",
         icon: "🚀"
     },
@@ -28,7 +28,7 @@ const ALL_PRIZES = [
         id: 4,
         name: "Гайд №4",
         description: "🔥 Потрясающе! Вы выиграли Гайд №4!",
-        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view",
         color: "#06D6A0",
         icon: "💎"
     }
@@ -66,6 +66,13 @@ let timerInterval = null;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
+
+// Основная функция инициализации
+function initApp() {
+    console.log('Инициализация приложения...');
+    
     // Инициализируем Telegram
     initTelegram();
     
@@ -76,8 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
     
     // Назначаем обработчики кнопок
-    spinButton.addEventListener('click', spinWheel);
-    claimButton.addEventListener('click', claimPrize);
+    initEventListeners();
     
     // Инициализация рулетки
     wheel.style.transform = 'rotate(0deg)';
@@ -89,36 +95,118 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Приложение инициализировано');
     console.log('Доступных призов:', availablePrizes.length);
     console.log('Полученных призов:', wonPrizes.length);
-});
+}
+
+// Инициализация обработчиков событий
+function initEventListeners() {
+    // Кнопка вращения рулетки
+    if (spinButton) {
+        spinButton.addEventListener('click', spinWheel);
+    }
+    
+    // Кнопка получения приза
+    if (claimButton) {
+        claimButton.addEventListener('click', claimPrize);
+    }
+    
+    // Кнопка "Ваши призы" в статистике
+    const myPrizesBtn = document.querySelector('.stats-bar .open-guide-btn');
+    if (myPrizesBtn) {
+        myPrizesBtn.addEventListener('click', openMyPrizes);
+        console.log('Кнопка "Ваши призы" найдена и обработчик назначен');
+    } else {
+        console.log('Кнопка "Ваши призы" не найдена!');
+        // Создаем кнопку вручную, если она не найдена
+        createMyPrizesButton();
+    }
+    
+    // Кнопка закрытия модального окна
+    const closeModalBtn = document.querySelector('.close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeMyPrizes);
+    }
+    
+    // Закрытие модального окна при клике на overlay
+    if (prizesModal) {
+        prizesModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMyPrizes();
+            }
+        });
+    }
+}
+
+// Создание кнопки "Ваши призы", если она не найдена
+function createMyPrizesButton() {
+    const statsBar = document.querySelector('.stats-bar');
+    if (!statsBar) return;
+    
+    const myPrizesBtn = document.createElement('button');
+    myPrizesBtn.className = 'open-guide-btn';
+    myPrizesBtn.style.cssText = 'background: transparent; color: white; padding: 5px 10px; border: none; cursor: pointer;';
+    myPrizesBtn.innerHTML = '<i class="fas fa-history"></i> Ваши призы';
+    myPrizesBtn.addEventListener('click', openMyPrizes);
+    
+    statsBar.appendChild(myPrizesBtn);
+    console.log('Кнопка "Ваши призы" создана программно');
+}
+
+// Инициализация Telegram Web App
+function initTelegram() {
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => tg.close());
+        console.log('Telegram Web App инициализирован');
+    } else {
+        console.log('Запуск вне Telegram - режим отладки');
+        addDebugInfo();
+    }
+}
+
+// Добавление отладочной информации
+function addDebugInfo() {
+    const debugDiv = document.createElement('div');
+    debugDiv.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: red;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1000;
+    `;
+    debugDiv.textContent = 'Режим отладки';
+    document.body.appendChild(debugDiv);
+}
 
 // Загрузка данных пользователя
 function loadUserData() {
-    // Загружаем время последнего вращения
     const lastSpinStr = localStorage.getItem(STORAGE_KEYS.LAST_SPIN);
     lastSpinTime = lastSpinStr ? parseInt(lastSpinStr) : null;
     
-    // Загружаем полученные призы
     const wonPrizesStr = localStorage.getItem(STORAGE_KEYS.WON_PRIZES);
     wonPrizes = wonPrizesStr ? JSON.parse(wonPrizesStr) : [];
     
-    // Загружаем доступные призы или создаем новые
     const availablePrizesStr = localStorage.getItem(STORAGE_KEYS.AVAILABLE_PRIZES);
     if (availablePrizesStr) {
         availablePrizes = JSON.parse(availablePrizesStr);
     } else {
-        // Первая загрузка - все призы доступны
         availablePrizes = [...ALL_PRIZES];
         saveAvailablePrizes();
     }
     
-    // Если призов больше нет, обновляем состояние
     if (availablePrizes.length === 0) {
         spinButton.disabled = true;
         spinButton.innerHTML = '<i class="fas fa-check-circle"></i> Все призы получены!';
     }
 }
 
-// Сохранение данных пользователя
+// Сохранение данных
 function saveUserData() {
     if (lastSpinTime) {
         localStorage.setItem(STORAGE_KEYS.LAST_SPIN, lastSpinTime.toString());
@@ -127,44 +215,26 @@ function saveUserData() {
     saveAvailablePrizes();
 }
 
-// Сохранение доступных призов
 function saveAvailablePrizes() {
     localStorage.setItem(STORAGE_KEYS.AVAILABLE_PRIZES, JSON.stringify(availablePrizes));
 }
 
 // Обновление интерфейса
 function updateUI() {
-    // Обновляем счетчики
     availablePrizesEl.textContent = availablePrizes.length;
     wonPrizesEl.textContent = wonPrizes.length;
-    
-    // Обновляем цвета рулетки
     updateWheelColors();
-    
-    // Обновляем доступность кнопки вращения
     updateSpinButton();
-    
-    // Обновляем список полученных призов
     updatePrizesList();
 }
 
 // Обновление цветов рулетки
 function updateWheelColors() {
-    // Создаем карту призов по ID
-    const prizeMap = {};
-    ALL_PRIZES.forEach(prize => {
-        prizeMap[prize.id] = prize;
-    });
-    
-    // Получаем цвета для каждого сектора
-    const colors = ['#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC']; // Серый по умолчанию
+    const colors = ['#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC'];
     
     availablePrizes.forEach((prize, index) => {
-        // Распределяем доступные призы по секторам
         if (index < 4) {
             colors[index] = prize.color;
-            
-            // Обновляем текст сектора
             const textElement = document.getElementById(`text${index + 1}`);
             if (textElement) {
                 textElement.textContent = prize.name;
@@ -173,12 +243,9 @@ function updateWheelColors() {
         }
     });
     
-    // Помечаем неактивные секторы
     ALL_PRIZES.forEach(prize => {
-        // Проверяем, выигран ли этот приз
         const isWon = wonPrizes.some(wonPrize => wonPrize.id === prize.id);
         if (isWon) {
-            // Находим какой это сектор
             const prizeIndex = ALL_PRIZES.findIndex(p => p.id === prize.id);
             if (prizeIndex >= 0) {
                 const textElement = document.getElementById(`text${prizeIndex + 1}`);
@@ -190,7 +257,6 @@ function updateWheelColors() {
         }
     });
     
-    // Устанавливаем цвета
     wheel.style.setProperty('--color1', colors[0]);
     wheel.style.setProperty('--color2', colors[1]);
     wheel.style.setProperty('--color3', colors[2]);
@@ -211,18 +277,15 @@ function updateSpinButton() {
         const twentyFourHours = 24 * 60 * 60 * 1000;
         
         if (timeSinceLastSpin < twentyFourHours) {
-            // Менее 24 часов прошло
             spinButton.disabled = true;
             spinButton.innerHTML = '<i class="fas fa-clock"></i> Завтра снова';
             timerContainer.style.display = 'block';
         } else {
-            // Прошло больше 24 часов
             spinButton.disabled = false;
             spinButton.innerHTML = '<i class="fas fa-play-circle"></i> Крутить рулетку';
             timerContainer.style.display = 'none';
         }
     } else {
-        // Первое вращение
         spinButton.disabled = false;
         spinButton.innerHTML = '<i class="fas fa-play-circle"></i> Крутить рулетку';
         timerContainer.style.display = 'none';
@@ -239,12 +302,10 @@ function updateTimer() {
     const timeLeft = twentyFourHours - timeSinceLastSpin;
     
     if (timeLeft > 0) {
-        // Конвертируем миллисекунды в часы, минуты, секунды
         const hours = Math.floor(timeLeft / (1000 * 60 * 60));
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
         
-        // Форматируем время
         const formattedTime = 
             `${hours.toString().padStart(2, '0')}:` +
             `${minutes.toString().padStart(2, '0')}:` +
@@ -252,7 +313,6 @@ function updateTimer() {
         
         timer.textContent = formattedTime;
     } else {
-        // Время вышло
         timerContainer.style.display = 'none';
         updateSpinButton();
     }
@@ -262,7 +322,6 @@ function updateTimer() {
 function spinWheel() {
     if (isSpinning || availablePrizes.length === 0) return;
     
-    // Проверяем, прошло ли 24 часа
     if (lastSpinTime) {
         const now = Date.now();
         const timeSinceLastSpin = now - lastSpinTime;
@@ -279,54 +338,32 @@ function spinWheel() {
     claimButton.disabled = true;
     prizeDisplay.classList.remove('show');
     
-    // Случайный выбор приза из доступных
     const prizeIndex = Math.floor(Math.random() * availablePrizes.length);
     currentPrize = availablePrizes[prizeIndex];
     
-    // Находим позицию приза на рулетке
     const allPrizeIndex = ALL_PRIZES.findIndex(p => p.id === currentPrize.id);
-    
-    // Расчет угла вращения
-    // 3 полных оборота = 1080 градусов
-    // Каждая секция = 90 градусов
-    const baseAngle = 1080; // 3 полных оборота
-    const segmentAngle = 90; // 90 градусов на секцию
-    const offset = 45; // Смещение на середину секции
-    
-    // Учитываем, что некоторые секторы могут быть пустыми
-    // Для простоты считаем, что призы распределены по порядку
-    const visualIndex = allPrizeIndex; // Индекс визуальной позиции
+    const baseAngle = 1080;
+    const segmentAngle = 90;
+    const offset = 45;
+    const visualIndex = allPrizeIndex;
     
     const targetAngle = baseAngle + (visualIndex * segmentAngle) + offset;
     
-    // Сброс трансформации перед новым вращением
     wheel.style.transition = 'none';
     wheel.style.transform = `rotate(${currentRotation % 360}deg)`;
     
-    // Даем браузеру время на обновление
     setTimeout(() => {
-        // Устанавливаем плавное вращение
         wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
         wheel.style.transform = `rotate(${currentRotation + targetAngle}deg)`;
         
-        // Сохраняем текущее вращение
         currentRotation += targetAngle;
         
-        // После завершения вращения
         setTimeout(() => {
             isSpinning = false;
-            
-            // Сохраняем время вращения
             lastSpinTime = Date.now();
-            
-            // Показать выигранный приз
             prizeText.textContent = currentPrize.description;
             prizeDisplay.classList.add('show');
-            
-            // Разблокировать кнопку получения приза
             claimButton.disabled = false;
-            
-            // Сохраняем данные и обновляем UI
             saveUserData();
             updateUI();
         }, 4000);
@@ -337,12 +374,10 @@ function spinWheel() {
 function claimPrize() {
     if (!currentPrize) return;
     
-    // Показать индикатор загрузки
     loading.classList.add('show');
     prizeDisplay.classList.remove('show');
     claimButton.disabled = true;
     
-    // Добавляем приз в полученные
     const wonPrize = {
         ...currentPrize,
         wonDate: new Date().toISOString(),
@@ -351,13 +386,11 @@ function claimPrize() {
     
     wonPrizes.push(wonPrize);
     
-    // Удаляем приз из доступных
     const prizeIndex = availablePrizes.findIndex(p => p.id === currentPrize.id);
     if (prizeIndex !== -1) {
         availablePrizes.splice(prizeIndex, 1);
     }
     
-    // Отправка данных в Telegram (если есть)
     if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.sendData(JSON.stringify({
@@ -367,21 +400,14 @@ function claimPrize() {
         }));
     }
     
-    // Сохраняем данные
     saveUserData();
     
-    // Через 1.5 секунды перенаправляем
     setTimeout(() => {
         window.open(currentPrize.link, '_blank');
-        
-        // Обновляем UI
         updateUI();
         
-        // Скрываем индикатор через 2 секунды
         setTimeout(() => {
             loading.classList.remove('show');
-            
-            // Сбрасываем текущий приз
             currentPrize = null;
         }, 2000);
     }, 1500);
@@ -389,17 +415,31 @@ function claimPrize() {
 
 // Открытие модального окна с призами
 function openMyPrizes() {
-    prizesModal.classList.add('show');
-    updatePrizesList();
+    console.log('Функция openMyPrizes вызвана');
+    if (prizesModal) {
+        prizesModal.classList.add('show');
+        updatePrizesList();
+    } else {
+        console.error('Элемент prizesModal не найден!');
+    }
 }
 
 // Закрытие модального окна
 function closeMyPrizes() {
-    prizesModal.classList.remove('show');
+    if (prizesModal) {
+        prizesModal.classList.remove('show');
+    }
 }
 
-// Обновление списка призов в модальном окне
+// Обновление списка призов
 function updatePrizesList() {
+    console.log('Обновление списка призов. Получено:', wonPrizes.length);
+    
+    if (!prizesList) {
+        console.error('Элемент prizesList не найден!');
+        return;
+    }
+    
     if (wonPrizes.length === 0) {
         prizesList.innerHTML = `
             <div class="empty-prizes">
@@ -411,7 +451,6 @@ function updatePrizesList() {
         return;
     }
     
-    // Сортируем по дате получения (новые сверху)
     const sortedPrizes = [...wonPrizes].sort((a, b) => {
         return new Date(b.wonDate) - new Date(a.wonDate);
     });
@@ -445,75 +484,26 @@ function updatePrizesList() {
     });
 }
 
-// Инициализация Telegram Web App
-function initTelegram() {
-    if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        
-        // Расширяем на весь экран
-        tg.expand();
-        
-        // Готовим приложение
-        tg.ready();
-        
-        // Показываем кнопку "Назад"
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            tg.close();
-        });
-        
-        // Используем ID пользователя для уникального хранения данных
-        const userId = tg.initDataUnsafe?.user?.id;
-        if (userId) {
-            // Модифицируем ключи хранилища для конкретного пользователя
-            Object.keys(STORAGE_KEYS).forEach(key => {
-                STORAGE_KEYS[key] = `telegram_wheel_${userId}_${key.toLowerCase()}`;
-            });
-            
-            // Перезагружаем данные с учетом ID пользователя
-            loadUserData();
-            updateUI();
-        }
-        
-        console.log('Telegram Web App инициализирован');
-    } else {
-        console.log('Запуск вне Telegram - режим отладки');
-        // Для отладки вне Telegram
-        document.body.insertAdjacentHTML('beforeend', `
-            <div style="
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: red;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 5px;
-                font-size: 12px;
-                z-index: 1000;
-            ">
-                Режим отладки
-            </div>
-        `);
-    }
-}
-
-// Функция сброса данных (для тестирования)
+// Сброс данных для тестирования
 function resetData() {
     if (confirm('Вы уверены, что хотите сбросить все данные?')) {
-        localStorage.removeItem(STORAGE_KEYS.LAST_SPIN);
-        localStorage.removeItem(STORAGE_KEYS.WON_PRIZES);
-        localStorage.removeItem(STORAGE_KEYS.AVAILABLE_PRIZES);
-        
-        // Перезагружаем страницу
+        localStorage.clear();
         location.reload();
     }
 }
+
+// Делаем функции глобально доступными
+window.openMyPrizes = openMyPrizes;
+window.closeMyPrizes = closeMyPrizes;
+window.spinWheel = spinWheel;
+window.claimPrize = claimPrize;
+window.resetData = resetData;
 
 // Добавляем кнопку сброса для тестирования (только в режиме отладки)
 if (!window.Telegram) {
     document.addEventListener('DOMContentLoaded', () => {
         const resetBtn = document.createElement('button');
-        resetBtn.textContent = 'Сбросить данные (тест)';
+        resetBtn.textContent = '🔄 Сбросить данные';
         resetBtn.style.cssText = `
             position: fixed;
             bottom: 10px;
@@ -521,11 +511,12 @@ if (!window.Telegram) {
             background: #ff4444;
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
             z-index: 1000;
             cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         `;
         resetBtn.onclick = resetData;
         document.body.appendChild(resetBtn);
