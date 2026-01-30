@@ -40,6 +40,7 @@
             margin: 40px auto;
         }
         
+        /* Колесо с 4 секциями */
         .wheel {
             width: 100%;
             height: 100%;
@@ -49,53 +50,27 @@
             border: 8px solid #fff;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: conic-gradient(
+                #FF6B6B 0deg 90deg,
+                #4ECDC4 90deg 180deg,
+                #FFD166 180deg 270deg,
+                #06D6A0 270deg 360deg
+            );
         }
         
-        /* Правильные секции рулетки */
-        .wheel-segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: bottom right;
-            left: 0;
-            top: 0;
-        }
-        
-        .segment-content {
+        /* Метки для разделения секций */
+        .wheel::before {
+            content: '';
             position: absolute;
             width: 100%;
             height: 100%;
-            background: var(--segment-color);
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: 
+                linear-gradient(0deg, transparent 49%, white 49%, white 51%, transparent 51%),
+                linear-gradient(90deg, transparent 49%, white 49%, white 51%, transparent 51%),
+                linear-gradient(180deg, transparent 49%, white 49%, white 51%, transparent 51%),
+                linear-gradient(270deg, transparent 49%, white 49%, white 51%, transparent 51%);
+            border-radius: 50%;
         }
-        
-        .segment-text {
-            position: absolute;
-            transform: rotate(45deg);
-            font-weight: bold;
-            font-size: 14px;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            width: 80px;
-            text-align: center;
-            margin-top: 40px;
-            margin-left: 40px;
-        }
-        
-        /* Позиционируем секции */
-        .segment-1 { transform: rotate(0deg); }
-        .segment-2 { transform: rotate(90deg); }
-        .segment-3 { transform: rotate(180deg); }
-        .segment-4 { transform: rotate(270deg); }
-        
-        /* Цвета секций */
-        .segment-1 .segment-content { --segment-color: #FF6B6B; }
-        .segment-2 .segment-content { --segment-color: #4ECDC4; }
-        .segment-3 .segment-content { --segment-color: #FFD166; }
-        .segment-4 .segment-content { --segment-color: #06D6A0; }
         
         .wheel-center {
             position: absolute;
@@ -109,6 +84,21 @@
             z-index: 10;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
+        
+        /* Текст на секциях */
+        .segment-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+        
+        #text1 { top: 30%; left: 70%; transform: translate(-50%, -50%) rotate(45deg); }
+        #text2 { top: 70%; left: 70%; transform: translate(-50%, -50%) rotate(135deg); }
+        #text3 { top: 70%; left: 30%; transform: translate(-50%, -50%) rotate(225deg); }
+        #text4 { top: 30%; left: 30%; transform: translate(-50%, -50%) rotate(315deg); }
         
         .pointer {
             position: absolute;
@@ -192,11 +182,6 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        
-        @keyframes wheelSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(1080deg); }
-        }
     </style>
 </head>
 <body>
@@ -209,23 +194,11 @@
         <div class="wheel-container">
             <div class="pointer"></div>
             <div class="wheel" id="wheel">
-                <div class="wheel-segment segment-1">
-                    <div class="segment-content"></div>
-                    <div class="segment-text">Гайд №1</div>
-                </div>
-                <div class="wheel-segment segment-2">
-                    <div class="segment-content"></div>
-                    <div class="segment-text">Гайд №2</div>
-                </div>
-                <div class="wheel-segment segment-3">
-                    <div class="segment-content"></div>
-                    <div class="segment-text">Гайд №3</div>
-                </div>
-                <div class="wheel-segment segment-4">
-                    <div class="segment-content"></div>
-                    <div class="segment-text">Гайд №4</div>
-                </div>
                 <div class="wheel-center"></div>
+                <div class="segment-text" id="text1">Гайд №1</div>
+                <div class="segment-text" id="text2">Гайд №2</div>
+                <div class="segment-text" id="text3">Гайд №3</div>
+                <div class="segment-text" id="text4">Гайд №4</div>
             </div>
         </div>
         
