@@ -3,22 +3,22 @@ const PRIZES = [
     {
         name: "Гайд №1",
         description: "🎉 Поздравляем! Вы выиграли Гайд №1!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_1" // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1ArQyMkAzymSleGWOeSSHImaRALX1SdVL/view?usp=sharing" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №2", 
         description: "🎊 Ура! Вы выиграли Гайд №2!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_2" // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1kz0LQI9_WKiZ5SAi_TuguAOb72CTGPky/view?usp=sharing" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №3",
         description: "🌟 Отлично! Вы выиграли Гайд №3!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_3" // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1fAfl9fOLQ2lTdAFWAMoZQNoWGjJvxnkh/view" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №4",
         description: "🔥 Потрясающе! Вы выиграли Гайд №4!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_4" // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1skPFZSaH1-utpzy01xSM1CPsoINGPY7e/view?usp=sharing" // ЗАМЕНИТЕ
     }
 ];
 
