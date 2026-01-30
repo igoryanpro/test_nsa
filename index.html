@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рулетка с Гайдами | Telegram Web App</title>
+    <title>🎡 Рулетка с Гайдами | Telegram Web App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -25,12 +26,42 @@
             text-align: center;
         }
         
-        .header { margin-bottom: 30px; }
+        .header { 
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .stats-item i {
+            font-size: 16px;
+        }
         
         h1 {
             font-size: 28px;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
         }
         
         .wheel-container {
@@ -51,10 +82,10 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
             background: conic-gradient(
-                #FF6B6B 0deg 90deg,
-                #4ECDC4 90deg 180deg,
-                #FFD166 180deg 270deg,
-                #06D6A0 270deg 360deg
+                var(--color1, #FF6B6B) 0deg 90deg,
+                var(--color2, #4ECDC4) 90deg 180deg,
+                var(--color3, #FFD166) 180deg 270deg,
+                var(--color4, #06D6A0) 270deg 360deg
             );
         }
         
@@ -93,12 +124,44 @@
             font-size: 16px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        #text1 { top: 30%; left: 70%; transform: translate(-50%, -50%) rotate(45deg); }
-        #text2 { top: 70%; left: 70%; transform: translate(-50%, -50%) rotate(135deg); }
-        #text3 { top: 70%; left: 30%; transform: translate(-50%, -50%) rotate(225deg); }
-        #text4 { top: 30%; left: 30%; transform: translate(-50%, -50%) rotate(315deg); }
+        #text1 { 
+            top: 30%; 
+            left: 70%; 
+            transform: translate(-50%, -50%) rotate(45deg); 
+            width: 60px;
+            height: 60px;
+        }
+        #text2 { 
+            top: 70%; 
+            left: 70%; 
+            transform: translate(-50%, -50%) rotate(135deg); 
+            width: 60px;
+            height: 60px;
+        }
+        #text3 { 
+            top: 70%; 
+            left: 30%; 
+            transform: translate(-50%, -50%) rotate(225deg); 
+            width: 60px;
+            height: 60px;
+        }
+        #text4 { 
+            top: 30%; 
+            left: 30%; 
+            transform: translate(-50%, -50%) rotate(315deg); 
+            width: 60px;
+            height: 60px;
+        }
+        
+        .segment-text.claimed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
         
         .pointer {
             position: absolute;
@@ -114,6 +177,13 @@
             filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
         }
         
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
         button {
             background: white;
             color: #667eea;
@@ -125,15 +195,22 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 100%;
-            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
-        button:hover { transform: translateY(-2px); }
+        button:hover:not(:disabled) { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
         button:disabled { 
             opacity: 0.6; 
             cursor: not-allowed; 
-            transform: none !important; 
+            background: #cccccc;
+            color: #666666;
         }
         
         .prize-display {
@@ -147,6 +224,12 @@
         }
         
         .prize-display.show { display: block; }
+        
+        .prize-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
         
         .loading {
             display: none;
@@ -172,23 +255,232 @@
             line-height: 1.5;
         }
         
+        /* Модальное окно с полученными призами */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal {
+            background: white;
+            color: #333;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .close-modal:hover {
+            background: #f0f0f0;
+        }
+        
+        .prizes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .prize-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+        
+        .prize-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .prize-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .prize-info {
+            flex-grow: 1;
+        }
+        
+        .prize-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .prize-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .open-guide-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .open-guide-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .empty-prizes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-prizes i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Таймер */
+        .timer-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .timer-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 120px;
+        }
+        
         /* Анимации */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 400px) {
+            .wheel-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .segment-text {
+                font-size: 14px;
+            }
+            
+            #text1 { top: 30%; left: 72%; }
+            #text2 { top: 72%; left: 72%; }
+            #text3 { top: 72%; left: 28%; }
+            #text4 { top: 30%; left: 28%; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="stats-bar">
+                <div class="stats-item">
+                    <i class="fas fa-gift"></i>
+                    <span id="availablePrizes">4</span> доступно
+                </div>
+                <div class="stats-item">
+                    <i class="fas fa-trophy"></i>
+                    <span id="wonPrizes">0</span> получено
+                </div>
+                <button onclick="openMyPrizes()" class="open-guide-btn" style="background: transparent; color: white; padding: 5px 10px;">
+                    <i class="fas fa-history"></i> Ваши призы
+                </button>
+            </div>
+            
             <h1>🎡 Колесо Фортуны</h1>
-            <p>Испытай удачу и получи гайд!</p>
+            <p class="subtitle">Одна попытка в сутки. Успей получить все гайды!</p>
         </div>
         
         <div class="wheel-container">
@@ -202,9 +494,18 @@
             </div>
         </div>
         
+        <div class="timer-container" id="timerContainer" style="display: none;">
+            <div class="timer-title">Следующая попытка через:</div>
+            <div class="timer" id="timer">24:00:00</div>
+        </div>
+        
         <div class="buttons">
-            <button id="spinButton">🎯 Крутить рулетку</button>
-            <button id="claimButton" disabled>🎁 Забрать подарок</button>
+            <button id="spinButton">
+                <i class="fas fa-play-circle"></i> Крутить рулетку
+            </button>
+            <button id="claimButton" disabled>
+                <i class="fas fa-gift"></i> Забрать подарок
+            </button>
         </div>
         
         <div class="prize-display" id="prizeDisplay">
@@ -218,10 +519,32 @@
         </div>
         
         <div class="instructions">
-            <p>🎁 4 приза: Гайд №1, Гайд №2, Гайд №3, Гайд №4</p>
-            <p>1. Нажми "Крутить рулетку"</p>
-            <p>2. После остановки нажми "Забрать подарок"</p>
-            <p>3. Откроется Яндекс.Диск с гайдом</p>
+            <p><i class="fas fa-info-circle"></i> Каждый день у вас одна попытка</p>
+            <p><i class="fas fa-check-circle"></i> Выигранный гайд исчезает из рулетки</p>
+            <p><i class="fas fa-book"></i> Все полученные гайды хранятся в "Ваши призы"</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно с полученными призами -->
+    <div class="modal-overlay" id="prizesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-trophy"></i> Ваши выбитые призы
+                </div>
+                <button class="close-modal" onclick="closeMyPrizes()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="prizes-list" id="prizesList">
+                <!-- Призы будут добавляться динамически -->
+                <div class="empty-prizes">
+                    <i class="fas fa-gift"></i>
+                    <h3>Пока нет полученных призов</h3>
+                    <p>Покрутите рулетку, чтобы получить первый гайд!</p>
+                </div>
+            </div>
         </div>
     </div>
 
