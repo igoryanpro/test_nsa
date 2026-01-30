@@ -4,7 +4,7 @@ const ALL_PRIZES = [
         id: 1,
         name: "Гайд №1",
         description: "🎉 Поздравляем! Вы выиграли Гайд №1!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_1", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
         color: "#FF6B6B",
         icon: "📚"
     },
@@ -12,7 +12,7 @@ const ALL_PRIZES = [
         id: 2,
         name: "Гайд №2", 
         description: "🎊 Ура! Вы выиграли Гайд №2!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_2", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
         color: "#4ECDC4",
         icon: "🎯"
     },
@@ -20,7 +20,7 @@ const ALL_PRIZES = [
         id: 3,
         name: "Гайд №3",
         description: "🌟 Отлично! Вы выиграли Гайд №3!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_3", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
         color: "#FFD166",
         icon: "🚀"
     },
@@ -28,7 +28,7 @@ const ALL_PRIZES = [
         id: 4,
         name: "Гайд №4",
         description: "🔥 Потрясающе! Вы выиграли Гайд №4!",
-        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_4", // ЗАМЕНИТЕ
+        link: "https://drive.google.com/file/d/1dkJZV46zi5vY0Gji_iQacjUTBfttCu_p/view", // ЗАМЕНИТЕ
         color: "#06D6A0",
         icon: "💎"
     }
