@@ -403,7 +403,7 @@ function claimPrize() {
     saveUserData();
     
     setTimeout(() => {
-        window.open(currentPrize.link, '_blank');
+        openGuide(currentPrize.link);
         updateUI();
         
         setTimeout(() => {
@@ -411,6 +411,29 @@ function claimPrize() {
             currentPrize = null;
         }, 2000);
     }, 1500);
+}
+
+// Функция открытия гайда
+function openGuide(link) {
+    console.log('Пытаюсь открыть ссылку:', link);
+    
+    // Проверяем, что ссылка существует и валидна
+    if (!link || link.includes('ВАША_ССЫЛКА')) {
+        alert('Ссылка на гайд не настроена. Пожалуйста, сообщите администратору.');
+        return;
+    }
+    
+    // Проверяем, запущено ли в Telegram Web App
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        // Используем метод Telegram для открытия ссылок
+        tg.openLink(link);
+        console.log('Открываю ссылку через Telegram Web App');
+    } else {
+        // Открываем в новом окне в обычном браузере
+        window.open(link, '_blank', 'noopener,noreferrer');
+        console.log('Открываю ссылку в новом окне');
+    }
 }
 
 // Открытие модального окна с призами
@@ -431,7 +454,7 @@ function closeMyPrizes() {
     }
 }
 
-// Обновление списка призов
+// Обновление списка призов (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 function updatePrizesList() {
     console.log('Обновление списка призов. Получено:', wonPrizes.length);
     
@@ -451,12 +474,15 @@ function updatePrizesList() {
         return;
     }
     
+    // Сортируем по дате получения (новые сверху)
     const sortedPrizes = [...wonPrizes].sort((a, b) => {
         return new Date(b.wonDate) - new Date(a.wonDate);
     });
     
+    // Очищаем список
     prizesList.innerHTML = '';
     
+    // Создаем элементы призов с правильными обработчиками
     sortedPrizes.forEach(prize => {
         const prizeDate = new Date(prize.wonDate);
         const formattedDate = prizeDate.toLocaleDateString('ru-RU', {
@@ -465,20 +491,56 @@ function updatePrizesList() {
             year: 'numeric'
         });
         
+        // Создаем элементы через DOM API
         const prizeElement = document.createElement('div');
         prizeElement.className = 'prize-item';
-        prizeElement.innerHTML = `
-            <div class="prize-icon" style="background: ${prize.color}">
-                ${prize.icon}
-            </div>
-            <div class="prize-info">
-                <div class="prize-name">${prize.name}</div>
-                <div class="prize-date">Получен: ${formattedDate}</div>
-            </div>
-            <button class="open-guide-btn" onclick="window.open('${prize.link}', '_blank')">
-                Открыть
-            </button>
-        `;
+        
+        // Иконка приза
+        const prizeIcon = document.createElement('div');
+        prizeIcon.className = 'prize-icon';
+        prizeIcon.style.background = prize.color;
+        prizeIcon.textContent = prize.icon;
+        
+        // Информация о призе
+        const prizeInfo = document.createElement('div');
+        prizeInfo.className = 'prize-info';
+        
+        const prizeName = document.createElement('div');
+        prizeName.className = 'prize-name';
+        prizeName.textContent = prize.name;
+        
+        const prizeDateEl = document.createElement('div');
+        prizeDateEl.className = 'prize-date';
+        prizeDateEl.textContent = `Получен: ${formattedDate}`;
+        
+        prizeInfo.appendChild(prizeName);
+        prizeInfo.appendChild(prizeDateEl);
+        
+        // Кнопка "Открыть"
+        const openButton = document.createElement('button');
+        openButton.className = 'open-guide-btn';
+        openButton.textContent = 'Открыть';
+        
+        // Добавляем обработчик клика
+        openButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Останавливаем всплытие
+            console.log('Кнопка "Открыть" нажата для:', prize.name);
+            openGuide(prize.link);
+        });
+        
+        // Добавляем hover эффект для всей карточки
+        prizeElement.addEventListener('click', function(e) {
+            // Если клик не на кнопке "Открыть", тоже открываем гайд
+            if (e.target !== openButton && !e.target.closest('.open-guide-btn')) {
+                console.log('Клик по карточке, открываю гайд:', prize.name);
+                openGuide(prize.link);
+            }
+        });
+        
+        // Собираем карточку
+        prizeElement.appendChild(prizeIcon);
+        prizeElement.appendChild(prizeInfo);
+        prizeElement.appendChild(openButton);
         
         prizesList.appendChild(prizeElement);
     });
@@ -498,6 +560,7 @@ window.closeMyPrizes = closeMyPrizes;
 window.spinWheel = spinWheel;
 window.claimPrize = claimPrize;
 window.resetData = resetData;
+window.openGuide = openGuide;
 
 // Добавляем кнопку сброса для тестирования (только в режиме отладки)
 if (!window.Telegram) {
