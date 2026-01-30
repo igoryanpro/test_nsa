@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рулетка с Гайдами</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 40px auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        
+        .wheel-item {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 40px;
+            padding-bottom: 40px;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .wheel-item:nth-child(1) { 
+            transform: rotate(0deg) skewY(-45deg); 
+            background: #FF6B6B; 
+        }
+        .wheel-item:nth-child(2) { 
+            transform: rotate(90deg) skewY(-45deg); 
+            background: #4ECDC4; 
+        }
+        .wheel-item:nth-child(3) { 
+            transform: rotate(180deg) skewY(-45deg); 
+            background: #FFD166; 
+        }
+        .wheel-item:nth-child(4) { 
+            transform: rotate(270deg) skewY(-45deg); 
+            background: #06D6A0; 
+        }
+        
+        .wheel-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            z-index: 20;
+        }
+        
+        .pointer:before {
+            content: '▲';
+            font-size: 40px;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 18px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .prize-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+        
+        .prize-display.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .prize-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎡 Колесо Фортуны</h1>
+            <p class="subtitle">Испытай удачу и получи один из 4 эксклюзивных гайдов!</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="wheel-item">Гайд №1</div>
+                <div class="wheel-item">Гайд №2</div>
+                <div class="wheel-item">Гайд №3</div>
+                <div class="wheel-item">Гайд №4</div>
+                <div class="wheel-center"></div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="spinButton" onclick="spinWheel()">🎯 Крутить рулетку</button>
+            <button id="claimButton" onclick="claimPrize()" disabled>🎁 Забрать подарок</button>
+        </div>
+        
+        <div class="prize-display" id="prizeDisplay">
+            <div class="prize-title" id="prizeText"></div>
+            <p>Нажмите "Забрать подарок", чтобы перейти к гайду</p>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Перенаправляем на Яндекс.Диск...</p>
+        </div>
+        
+        <div class="instructions">
+            <p>🎁 В рулетке 4 приза: Гайд №1, Гайд №2, Гайд №3, Гайд №4</p>
+            <p>1. Нажми "Крутить рулетку"</p>
+            <p>2. После остановки рулетки нажми "Забрать подарок"</p>
+            <p>3. Автоматически откроется Яндекс.Диск с выигранным гайдом</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
