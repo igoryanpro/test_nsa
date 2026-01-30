@@ -1,31 +1,26 @@
-// Конфигурация приза - ЗАМЕНИТЕ ЭТИ ССЫЛКИ НА СВОИ!
+// КОНФИГУРАЦИЯ - ЗАМЕНИТЕ ССЫЛКИ НА СВОИ!
 const PRIZES = [
     {
         name: "Гайд №1",
         description: "🎉 Поздравляем! Вы выиграли Гайд №1!",
-        link: "https://drive.google.com/file/d/1ArQyMkAzymSleGWOeSSHImaRALX1SdVL/view?usp=sharing" // ЗАМЕНИТЕ
+        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_1" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №2", 
         description: "🎊 Ура! Вы выиграли Гайд №2!",
-        link: "https://drive.google.com/file/d/1kz0LQI9_WKiZ5SAi_TuguAOb72CTGPky/view?usp=sharing" // ЗАМЕНИТЕ
+        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_2" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №3",
         description: "🌟 Отлично! Вы выиграли Гайд №3!",
-        link: "https://drive.google.com/file/d/1fAfl9fOLQ2lTdAFWAMoZQNoWGjJvxnkh/view" // ЗАМЕНИТЕ
+        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_3" // ЗАМЕНИТЕ
     },
     {
         name: "Гайд №4",
         description: "🔥 Потрясающе! Вы выиграли Гайд №4!",
-        link: "https://drive.google.com/file/d/1skPFZSaH1-utpzy01xSM1CPsoINGPY7e/view?usp=sharing" // ЗАМЕНИТЕ
+        link: "https://disk.yandex.ru/d/ВАША_ССЫЛКА_4" // ЗАМЕНИТЕ
     }
 ];
-
-// Инициализация Telegram Web App
-let tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
 
 // Элементы DOM
 const wheel = document.getElementById('wheel');
@@ -38,9 +33,9 @@ const loading = document.getElementById('loading');
 // Переменные состояния
 let isSpinning = false;
 let currentPrize = null;
-let wheelRotation = 0;
+let currentRotation = 0;
 
-// Функция для вращения рулетки
+// Функция вращения рулетки
 function spinWheel() {
     if (isSpinning) return;
     
@@ -54,29 +49,36 @@ function spinWheel() {
     currentPrize = PRIZES[prizeIndex];
     
     // Расчет угла вращения (3 полных оборота + позиция приза)
-    const segmentAngle = 360 / PRIZES.length;
-    const targetAngle = 360 * 3 + (prizeIndex * segmentAngle) + (segmentAngle / 2);
+    const segmentAngle = 90; // 360 / 4 секции = 90 градусов
+    const targetAngle = 1080 + (prizeIndex * segmentAngle) + 45; // 1080 = 3 полных оборота
     
-    // Вращение
-    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
-    wheel.style.transform = `rotate(${-targetAngle}deg)`;
+    // Сброс трансформации перед новым вращением
+    wheel.style.transition = 'none';
+    wheel.style.transform = `rotate(${currentRotation % 360}deg)`;
     
-    // После завершения вращения
+    // Даем браузеру время на обновление
     setTimeout(() => {
-        isSpinning = false;
-        spinButton.disabled = false;
-        claimButton.disabled = false;
+        // Устанавливаем плавное вращение
+        wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+        wheel.style.transform = `rotate(${currentRotation + targetAngle}deg)`;
         
-        // Показать выигранный приз
-        prizeText.textContent = currentPrize.description;
-        prizeDisplay.classList.add('show');
+        // Сохраняем текущее вращение
+        currentRotation += targetAngle;
         
-        // Сохранить текущее положение колеса
-        wheelRotation = targetAngle % 360;
-    }, 4000);
+        // После завершения вращения
+        setTimeout(() => {
+            isSpinning = false;
+            spinButton.disabled = false;
+            claimButton.disabled = false;
+            
+            // Показать выигранный приз
+            prizeText.textContent = currentPrize.description;
+            prizeDisplay.classList.add('show');
+        }, 4000);
+    }, 50);
 }
 
-// Функция для получения приза
+// Функция получения приза
 function claimPrize() {
     if (!currentPrize) return;
     
@@ -86,35 +88,118 @@ function claimPrize() {
     claimButton.disabled = true;
     spinButton.disabled = true;
     
-    // Отправка данных в Telegram (если нужно)
-    tg.sendData(JSON.stringify({
-        action: 'prize_claimed',
-        prize: currentPrize.name,
-        timestamp: new Date().toISOString()
-    }));
+    // Отправка данных в Telegram (если есть)
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.sendData(JSON.stringify({
+            action: 'prize_claimed',
+            prize: currentPrize.name,
+            timestamp: new Date().toISOString()
+        }));
+    }
     
-    // Через 2 секунды перенаправляем на Яндекс.Диск
+    // Через 1.5 секунды перенаправляем
     setTimeout(() => {
         window.open(currentPrize.link, '_blank');
-        loading.classList.remove('show');
         
-        // Сброс через 3 секунды
+        // Скрываем индикатор через 2 секунды
         setTimeout(() => {
-            claimButton.disabled = false;
-            spinButton.disabled = false;
-            prizeDisplay.classList.remove('show');
-            currentPrize = null;
-        }, 3000);
-    }, 2000);
+            loading.classList.remove('show');
+            
+            // Сброс через 3 секунды
+            setTimeout(() => {
+                claimButton.disabled = false;
+                spinButton.disabled = false;
+                currentPrize = null;
+            }, 3000);
+        }, 2000);
+    }, 1500);
 }
 
-// Сброс вращения при загрузке
-wheel.style.transform = 'rotate(0deg)';
+// Инициализация Telegram Web App
+function initTelegram() {
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        
+        // Расширяем на весь экран
+        tg.expand();
+        
+        // Готовим приложение
+        tg.ready();
+        
+        // Показываем кнопку "Назад"
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
+            tg.close();
+        });
+        
+        console.log('Telegram Web App инициализирован');
+    } else {
+        console.log('Запуск вне Telegram - режим отладки');
+        // Для отладки вне Telegram
+        document.body.innerHTML += `
+            <div style="
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: red;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 5px;
+                font-size: 12px;
+                z-index: 1000;
+            ">
+                Режим отладки
+            </div>
+        `;
+    }
+}
 
-// Обработчик для кнопки "Назад" в Telegram
-tg.onEvent('backButtonClicked', () => {
-    tg.close();
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // Инициализируем Telegram
+    initTelegram();
+    
+    // Назначаем обработчики кнопок
+    spinButton.addEventListener('click', spinWheel);
+    claimButton.addEventListener('click', claimPrize);
+    
+    // Инициализация рулетки
+    wheel.style.transform = 'rotate(0deg)';
+    
+    // Для отладки: автоматическое вращение через 2 секунды
+    if (!window.Telegram) {
+        setTimeout(() => {
+            console.log('Авто-вращение для отладки');
+            // spinWheel();
+        }, 2000);
+    }
 });
 
-// Показать кнопку "Назад"
-tg.BackButton.show();
+// Добавляем стили для корректного отображения в мобильных браузерах
+const style = document.createElement('style');
+style.textContent = `
+    @media (max-width: 400px) {
+        .wheel-container {
+            width: 280px;
+            height: 280px;
+        }
+        
+        .segment-text {
+            font-size: 12px;
+            margin-top: 35px;
+            margin-left: 35px;
+        }
+    }
+    
+    /* Улучшаем видимость текста */
+    .segment-text {
+        transform: rotate(45deg) translate(10px, 10px);
+    }
+    
+    /* Анимация затухания для плавного появления */
+    .prize-display.show {
+        animation: fadeIn 0.5s ease forwards;
+    }
+`;
+document.head.appendChild(style);
